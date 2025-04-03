@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  catalog:
+    build:
+      context: .
+      dockerfile: catalog-module/Dockerfile
+    ports:
+      - "4575:4575"
+    networks:
+      - microservicesNetwork
+
+networks:
+  microservicesNetwork:
+    driver: bridge
