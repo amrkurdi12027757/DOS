@@ -21,6 +21,18 @@ services:
     networks:
       - microservicesNetwork
 
+  gateway:
+    build:
+      context: .
+      dockerfile: gateway-module/Dockerfile
+    ports:
+      - "4567:4567"
+    depends_on:
+      - catalog
+      - order
+    networks:
+      - microservicesNetwork
+
 networks:
   microservicesNetwork:
     driver: bridge

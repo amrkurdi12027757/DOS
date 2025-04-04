@@ -16,6 +16,8 @@
         <unirest-java-core.version>1.4.9</unirest-java-core.version>
         <spark-core.version>2.9.4</spark-core.version>
         <gson.version>2.12.1</gson.version>
+        <logback-classic.version>1.5.18</logback-classic.version>
+        <slf4j-api.version>2.0.17</slf4j-api.version>
     </properties>
 
 
@@ -36,12 +38,23 @@
                 <artifactId>gson</artifactId>
                 <version>${gson.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>${slf4j-api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>ch.qos.logback</groupId>
+                <artifactId>logback-classic</artifactId>
+                <version>${logback-classic.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
     <modules>
         <module>catalog-module</module>
         <module>order-module</module>
+        <module>gateway-module</module>
     </modules>
 
 </project>

@@ -20,6 +20,8 @@ containerized using Docker.
       * [API Endpoints](#api-endpoints)
    * [Order Service](#order-service)
       * [API Endpoints](#api-endpoints)
+   * [Gateway Service](#gateway-service)
+        * [Routing Logic](#routing-logic)
 
 ### Installation
 
@@ -97,3 +99,22 @@ Success (HTTP 200): Returns the message: "Purchase successful for item ID: [item
 Failure (HTTP 400): Returns the message: "Purchase failed for item ID: [itemId]. Item may be out of stock or not found.".
 
 Note: The Order Service depends on the Catalog Service being available at http://catalog:4575 (when running within Docker Compose, the service name catalog can be used for inter-service communication).
+
+## Gateway Service
+
+The Gateway Service simplifies access to the system by forwarding user-facing HTTP requests to the appropriate backend services. It runs on port 4567.
+
+### Routing Logic
+
+The gateway listens for the following routes and forwards them internally:
+
+Endpoint	Method	Forwards To
+
+`/search/:topic	GET	http://catalog:4575/search/:topic`
+
+`/info/:id	GET	http://catalog:4575/info/:id`
+
+`/purchase/:itemId	POST	http://order:3300/purchase/:itemId`
+
+These routes are handled by the `ForwardingHandler` class, which dynamically resolves path parameters and logs request/response details.
+
