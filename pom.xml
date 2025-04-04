@@ -41,6 +41,7 @@
 
     <modules>
         <module>catalog-module</module>
+        <module>order-module</module>
     </modules>
 
 </project>

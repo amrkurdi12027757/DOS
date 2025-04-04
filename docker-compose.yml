@@ -10,6 +10,17 @@ services:
     networks:
       - microservicesNetwork
 
+  order:
+    build:
+      context: .
+      dockerfile: order-module/Dockerfile
+    ports:
+      - "3300:3300"
+    depends_on:
+      - catalog
+    networks:
+      - microservicesNetwork
+
 networks:
   microservicesNetwork:
     driver: bridge

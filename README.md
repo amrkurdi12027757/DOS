@@ -18,6 +18,8 @@ containerized using Docker.
     * [Running with Docker Compose](#running-with-docker-compose)
     * [Catalog Service](#catalog-service)
       * [API Endpoints](#api-endpoints)
+   * [Order Service](#order-service)
+      * [API Endpoints](#api-endpoints)
 
 ### Installation
 
@@ -37,13 +39,11 @@ To run the DOS Catalog Service, you will need the following prerequisites:
    cd DOS
    ```
 
-2. **Build the Catalog Service using Maven:**
+2. **Build All Service using Maven:**
    ```bash
-   cd catalog-module
    mvn clean package
-   cd ..
    ```
-   This command will compile the Java code and create a JAR file in the `catalog-module/target` directory.
+   This command will compile the Java code and create a JAR file in each module `target` directory.
 
 ### Usage
 
@@ -80,3 +80,20 @@ The Catalog Service exposes the following RESTful API endpoints:
     * **Example:** `http://localhost:4575/updateStock/1`
 
 **Note:** The initial book data is loaded from the `books.csv` file.
+
+## Order Service
+The Order Service runs on port 3300.
+
+### API Endpoints
+The Order Service exposes the following RESTful API endpoint:
+
+`POST /purchase/:itemId:` Initiates the purchase of an item with the given :itemId. This endpoint communicates with the Catalog Service to check the stock and update it if the purchase is successful.
+
+Example: Send a POST request to http://localhost:3300/purchase/1.
+Response:
+
+Success (HTTP 200): Returns the message: "Purchase successful for item ID: [itemId]".
+
+Failure (HTTP 400): Returns the message: "Purchase failed for item ID: [itemId]. Item may be out of stock or not found.".
+
+Note: The Order Service depends on the Catalog Service being available at http://catalog:4575 (when running within Docker Compose, the service name catalog can be used for inter-service communication).
