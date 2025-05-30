@@ -7,21 +7,28 @@ import spark.Request;
 import spark.Response;
 import spark.Route;
 
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.function.Supplier;
 
 public class ForwardingHandler implements Route {
     private static final Logger LOGGER = Logger.getLogger(ForwardingHandler.class.getName());
-    private final String baseUrl;
+
+    private final Supplier<String> baseUrl;
     private final String pathTemplate;
     private final HttpMethod method;
 
-    public enum HttpMethod {//Only for now as Amr only used POST,GET
+    private static final ConcurrentHashMap<String, String> responseCache = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<String, Set<String>> idToKeys = new ConcurrentHashMap<>();
+
+    public enum HttpMethod {
         GET, POST
     }
 
-    public ForwardingHandler(String baseUrl, String pathTemplate, HttpMethod method) {
+    public ForwardingHandler(Supplier<String> baseUrl, String pathTemplate, HttpMethod method) {
         this.baseUrl = baseUrl;
         this.pathTemplate = pathTemplate;
         this.method = method;
@@ -30,13 +37,33 @@ public class ForwardingHandler implements Route {
     @Override
     public Object handle(Request request, Response response) {
         String path = resolvePath(pathTemplate, request);
-        try {
+        String query = request.queryString();
+        String url = path + (query != null ? "?" + query : "");
 
-            HttpResponse<String> forwardResponse = sendRequest(baseUrl + path);
+        if (method == HttpMethod.GET) {
+            String cached = responseCache.get(url);
+            if (cached != null) {
+                LOGGER.info("Cache hit for " + url);
+                return cached;
+            }
+        }
+
+        try {
+            HttpResponse<String> forwardResponse = sendRequest(baseUrl.get() + url);
             LOGGER.info("\nReceived response from forwarded server\nStatus: " + forwardResponse.getStatus() + "\nBody: " + forwardResponse.getBody());
             response.status(forwardResponse.getStatus());
 
             if (forwardResponse.getStatus() == 200) {
+                if (method == HttpMethod.GET) {
+                    responseCache.put(url, forwardResponse.getBody());
+
+                    // Extract id from path if present
+                    Matcher idMatcher = Pattern.compile("/(\\d+)$").matcher(path);
+                    if (idMatcher.find()) {
+                        String id = idMatcher.group(1);
+                        idToKeys.computeIfAbsent(id, k -> ConcurrentHashMap.newKeySet()).add(url);
+                    }
+                }
                 return forwardResponse.getBody();
             } else {
                 return "Forwarding error: " + forwardResponse.getBody();
@@ -69,4 +96,13 @@ public class ForwardingHandler implements Route {
         return resolved;
     }
 
+    public static void invalidateById(String id) {
+        Set<String> keys = idToKeys.remove(id);
+        if (keys != null) {
+            for (String key : keys) {
+                responseCache.remove(key);
+                LOGGER.info("Invalidated cache entry for: " + key);
+            }
+        }
+    }
 }
