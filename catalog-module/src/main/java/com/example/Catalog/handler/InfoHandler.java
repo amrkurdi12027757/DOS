@@ -6,12 +6,17 @@ import spark.Request;
 import spark.Response;
 import spark.Route;
 
+import java.util.logging.Logger;
+
 import static com.example.Catalog.CatalogServer.BOOKS;
 import static com.example.Catalog.CatalogServer.GSON;
 
 public class InfoHandler implements Route {
+    private static final Logger LOGGER = Logger.getLogger(InfoHandler.class.getName());
+
     @Override
     public Object handle(Request request, Response response) {
+        LOGGER.info("Handling info request");
         int id = Integer.parseInt(request.params(":id"));
 
         Book resultBook = BOOKS.get().stream()

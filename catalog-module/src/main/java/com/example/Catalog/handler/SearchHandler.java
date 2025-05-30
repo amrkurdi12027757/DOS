@@ -7,14 +7,17 @@ import spark.Response;
 import spark.Route;
 
 import java.util.List;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import static com.example.Catalog.CatalogServer.BOOKS;
 import static com.example.Catalog.CatalogServer.GSON;
 
 public class SearchHandler implements Route {
+    private static final Logger LOGGER = Logger.getLogger(InfoHandler.class.getName());
     @Override
     public Object handle(Request request, Response response) {
+        LOGGER.info("Handling search request");
         String topic = request.params(":topic");
 
         List<Book> filteredBooks = BOOKS.get().stream()

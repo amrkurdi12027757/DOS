@@ -55,6 +55,7 @@
         <module>catalog-module</module>
         <module>order-module</module>
         <module>gateway-module</module>
+        <module>shared</module>
     </modules>
 
 </project>
