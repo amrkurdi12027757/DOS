@@ -1,16 +1,22 @@
-version: '3.8'
+version: "3.9"
 
 services:
   catalog:
+    image: catalog:1.0
     build:
       context: .
       dockerfile: catalog-module/Dockerfile
-    ports:
-      - "4575:4575"
+    deploy:
+      mode: replicated
+      replicas: 3
+      endpoint_mode: dnsrr
+    environment:
+      - PORT=4575
     networks:
       - microservicesNetwork
 
   order:
+    image: order:1.0
     build:
       context: .
       dockerfile: order-module/Dockerfile
@@ -22,6 +28,7 @@ services:
       - microservicesNetwork
 
   gateway:
+    image: gateway:1.0
     build:
       context: .
       dockerfile: gateway-module/Dockerfile
