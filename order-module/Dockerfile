@@ -1,9 +1,22 @@
-FROM maven:3.9.6-eclipse-temurin-17
+FROM maven:3.9.6-eclipse-temurin-17 AS builder
+WORKDIR /build
 
-WORKDIR /app
+COPY pom.xml .
+
+COPY order-module/pom.xml    order-module/pom.xml
+COPY gateway-module/pom.xml  gateway-module/pom.xml
+COPY catalog-module/pom.xml  catalog-module/pom.xml
+COPY shared/pom.xml          shared/pom.xml
+
+RUN --mount=type=cache,target=/root/.m2 \
+    mvn -pl order-module -am -B dependency:go-offline
 
 COPY . .
+RUN --mount=type=cache,target=/root/.m2 \
+    mvn -pl order-module -am -DskipTests -T1C package -B
 
-RUN mvn -pl order-module -am package
+FROM eclipse-temurin:17-jre
+WORKDIR /app
+COPY --from=builder /build/order-module/target/order-1.0.jar app.jar
 
-CMD ["java", "-jar", "order-module/target/order-1.0.jar"]
+ENTRYPOINT ["java","-jar","/app/app.jar"]
